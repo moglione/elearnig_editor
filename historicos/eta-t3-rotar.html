@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ETA-T3 Editor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Reset y estilos base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      background: #e0e0e0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+    }
+    .main-wrapper {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      display: flex;
+    }
+    /* Title bar */
+    .title-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 15px 30px 15px 15px;
+      font-size: 20px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 2000;
+      background: transparent;
+      color: #0e0e0e;
+    }
+    .title-bar button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-left: 5px;
+    }
+    /* Sidebar de herramientas */
+    .sidebar {
+      width: 80px;
+      background: rgba(255,255,255,0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 8px 5px;
+      gap: 10px;
+      border-top-right-radius: 10px;
+      border-bottom-right-radius: 10px;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1000;
+      box-shadow: 0 0 0.6em rgba(0,0,0,0.12);
+    }
+    .toolButton {
+      background: transparent;
+      border: none;
+      color: rgba(0,0,0,0.5);
+      cursor: pointer;
+      padding: 10px;
+      font-size: 20px;
+      border-radius: 5px;
+      width: 90%;
+      text-align: center;
+    }
+    .toolButton:hover { background: rgba(128,128,128,0.5); }
+    /* Canvas y contenedor de tarjetas */
+    .canvas {
+      flex-grow: 1;
+      height: 100vh;
+      overflow-y: auto;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      z-index: 100;
+      padding-top: 150px;
+    }
+    #cards-container {
+      position: relative;
+      transform-origin: top center;
+      transition: transform 0.2s ease;
+    }
+    /* Tarjeta – sin padding */
+    .card {
+      width: auto;
+      height: 70vh;
+      aspect-ratio: 9/16;
+      border-radius: 15px;
+      background: #fff;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 80px;
+      box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: pointer;
+      padding: 0;
+      transition: border 0.2s ease;
+    }
+    .card.selected { border: 2px solid #007bff; }
+    /* Contenido de la tarjeta (texto siempre adelante) */
+    .card-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      padding: 20px;
+    }
+    .card-content h2,
+    .card-content p { margin: 10px; }
+    /* Área de imágenes, detrás del texto */
+    .card-images {
+      position: absolute;
+      z-index: 1;
+      top: 0;
+      left: 0;
+    }
+    /* Botonera: solo se muestra si la tarjeta está seleccionada */
+    .card-buttons {
+      display: none;
+      gap: 10px;
+      justify-content: center;
+      position: absolute;
+      bottom: -50px;
+      z-index: 3;
+    }
+    .card.selected .card-buttons { display: flex; }
+    .card-buttons button {
+      background: #ff5722;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 18px;
+      font-size: 16px;
+      width: 36px;
+      height: 36px;
+    }
+    /* Imagen y su wrapper */
+    .card-image-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: rotate(0deg);
+      pointer-events: auto;
+    }
+    .card-image-wrapper img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .card-image-wrapper.selected-image {
+      border: 2px dashed #007bff;
+    }
+    /* Rotate handle (para giro arbitrario) */
+    .rotate-handle {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 20px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 50%;
+      cursor: grab;
+      z-index: 10000;
+    }
+    /* Resize handles (esquinas) */
+    .resize-handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #007bff;
+      border: 1px solid #fff;
+      z-index: 10000;
+      cursor: nwse-resize;
+    }
+    .resize-handle.tl { top: -5px; left: -5px; }
+    .resize-handle.tr { top: -5px; right: -5px; cursor: nesw-resize; }
+    .resize-handle.bl { bottom: -5px; left: -5px; cursor: nesw-resize; }
+    .resize-handle.br { bottom: -5px; right: -5px; }
+    /* Controles de zoom */
+    .zoom-controls {
+      position: fixed;
+      bottom: 10px;
+      right: 40px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0,0,0,0.5);
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: #fff;
+      font-size: 16px;
+      z-index: 1100;
+    }
+    .zoom-controls button {
+      background: transparent;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 20px;
+    }
+    /* Layout horizontal (opcional) */
+    #cards-container.horizontal-layout {
+      position: absolute;
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-left: 50vw;
+      margin-left: -200px;
+      width: max-content;
+      height: 98vh;
+      top: 0;
+      gap: 40px;
+      padding-right: 25vw;
+    }
+    #cards-container.horizontal-layout .card {
+      left: 0;
+      transform: none;
+      margin: 10px;
+      margin-bottom: 0;
+    }
+    /* Panel lateral */
+    #side-panel {
+      position: absolute;
+      right: -25vw;
+      top: 65px;
+      width: 25vw;
+      height: calc(100vh - 66px);
+      background: #fff;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+      transform: translateX(100%);
+      transition: right 0.5s ease;
+      z-index: 1500;
+      display: flex;
+      flex-direction: column;
+    }
+    #side-panel.open { right: 25vw; }
+    #side-panel #side-panel-header {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #side-panel #tabs {
+      display: flex;
+      border-bottom: 1px solid #ccc;
+    }
+    #side-panel #tabs .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+    #side-panel #tabs .tab.active { background: #f0f0f0; font-weight: bold; }
+    #side-panel .tab-pane {
+      flex-grow: 1;
+      display: none;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    #side-panel .tab-pane.active { display: block; }
+    /* Biblioteca de imágenes */
+    #image-library {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    #image-library img {
+      width: 48%;
+      object-fit: cover;
+      cursor: pointer;
+    }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(128,128,128,0.9);
+      border-radius: 6px;
+      border: 1px solid transparent;
+    }
+    ::-webkit-scrollbar-track { background-color: transparent; border-radius: 6px; }
+    ::-webkit-scrollbar-button { display: none; }
+ 
+    /* Menús contextuales */
+    #image-context-menu, #text-context-menu {
+      display: none;
+      position: absolute;
+      background: #fff;
+      border: 1px solid #ccc;
+      z-index: 10000;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+    }
+    #image-context-menu ul, #text-context-menu ul {
+      list-style: none;
+      margin: 0;
+      padding: 5px;
+    }
+    #image-context-menu li, #text-context-menu li {
+      padding: 5px;
+      cursor: pointer;
+    }
+    #image-context-menu li:hover, #text-context-menu li:hover {
+      background: #f0f0f0;
+    }
+    #text-context-menu hr { margin: 5px 0; border: 0; border-top: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <div class="main-wrapper">
+    <div class="canvas" id="canvas">
+      <!-- Contenedor de tarjetas -->
+      <div id="cards-container"></div>
+      <!-- Controles de zoom -->
+      <div class="zoom-controls">
+        <button id="zoom-out"><i class="fas fa-search-minus"></i></button>
+        <span id="zoom-level">100%</span>
+        <button id="zoom-in"><i class="fas fa-search-plus"></i></button>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="toolButton" onclick="addCard()"><i class="fas fa-file-alt"></i></div>
+      <div class="toolButton" onclick="addVideo()"><i class="fas fa-video"></i></div>
+      <div class="toolButton" onclick="addQuiz()"><i class="fas fa-question-circle"></i></div>
+      <div class="toolButton" onclick="addAudio()"><i class="fas fa-music"></i></div>
+      <div class="toolButton" onclick="addForm()"><i class="fas fa-edit"></i></div>
+      <div class="toolButton" onclick="addSurvey()"><i class="fas fa-chart-pie"></i></div>
+      <div class="toolButton" onclick="addTextButton()"><i class="fas fa-dot-circle"></i></div>
+    </div>
+    <div class="title-bar">
+      <span>ETA-T3 Editor</span>
+      <div>
+        <button onclick="saveCourse()">Guardar</button>
+        <button onclick="loadCourse()">Cargar</button>
+        <button id="toggle-layout" onclick="toggleLayout()">Layout: Vertical</button>
+      </div>
+    </div>
+    <div id="side-panel">
+      <div id="side-panel-header">
+        <span style="font-weight:bold;">Biblioteca</span>
+        <button onclick="closeSidePanel()" style="background:transparent; border:none; font-size:20px; cursor:pointer;">&times;</button>
+      </div>
+      <div id="tabs">
+        <div class="tab active" data-tab="images" onclick="showTab('images')">Imagen</div>
+        <div class="tab" data-tab="gifs" onclick="showTab('gifs')">GIF animados</div>
+        <div class="tab" data-tab="unsplash" onclick="showTab('unsplash')">Unsplash</div>
+      </div>
+      <div id="tab-content">
+        <div id="images-tab" class="tab-pane active">
+          <div id="image-library"></div>
+          <button id="upload-image-btn" style="margin-top:10px; padding:5px 10px;">Cargar imagen</button>
+          <input type="file" id="upload-image-input" accept="image/*" style="display:none;" onchange="handleUploadImage(event)">
+        </div>
+        <div id="gifs-tab" class="tab-pane">
+          <p>GIF animados (próximamente)</p>
+        </div>
+        <div id="unsplash-tab" class="tab-pane">
+          <p>Unsplash (próximamente)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Menú contextual para imagen -->
+  <div id="image-context-menu">
+    <ul>
+      <li id="img-context-delete">Borra imagen</li>
+      <li id="img-context-fullscreen">Full screen</li>
+      <li id="img-context-thumbnail">Thumbnail</li>
+    </ul>
+  </div>
+  
+  <!-- Menú contextual para texto -->
+  <div id="text-context-menu">
+    <ul>
+      <li id="text-align-left">Alinear izquierda</li>
+      <li id="text-align-center">Alinear centro</li>
+      <li id="text-align-right">Alinear derecha</li>
+      <hr>
+      <li id="text-vertical-top">Posición arriba</li>
+      <li id="text-vertical-center">Posición centro</li>
+      <li id="text-vertical-bottom">Posición abajo</li>
+    </ul>
+  </div>
+
+   <!-- PANEL LATERAL Y BIBLIOTECA DE IMÁGENES -->
+  <div id="side-panel">
+    <div id="side-panel-header">
+      <span style="font-weight:bold;">Biblioteca</span>
+      <button onclick="closeSidePanel()" style="background:transparent; border:none; font-size:20px; cursor:pointer;">&times;</button>
+    </div>
+    <div id="tabs">
+      <div class="tab active" data-tab="images" onclick="showTab('images')">Imagen</div>
+      <div class="tab" data-tab="gifs" onclick="showTab('gifs')">GIF animados</div>
+      <div class="tab" data-tab="unsplash" onclick="showTab('unsplash')">Unsplash</div>
+    </div>
+    <div id="tab-content">
+      <div id="images-tab" class="tab-pane active">
+        <div id="image-library"></div>
+        <button id="upload-image-btn" style="margin-top:10px; padding:5px 10px;">Cargar imagen</button>
+        <input type="file" id="upload-image-input" accept="image/*" style="display:none;" onchange="handleUploadImage(event)">
+      </div>
+      <div id="gifs-tab" class="tab-pane">
+        <p>GIF animados (próximamente)</p>
+      </div>
+      <div id="unsplash-tab" class="tab-pane">
+        <p>Unsplash (próximamente)</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- MENÚ CONTEXTUAL PARA IMAGEN -->
+  <div id="image-context-menu">
+    <ul>
+      <li id="img-context-delete">Borra imagen</li>
+      <li id="img-context-fullscreen">Full screen</li>
+      <li id="img-context-thumbnail">Thumbnail</li>
+    </ul>
+  </div>
+  
+  <!-- MENÚ CONTEXTUAL PARA TEXTO -->
+  <div id="text-context-menu">
+    <ul>
+      <li id="text-align-left">Alinear izquierda</li>
+      <li id="text-align-center">Alinear centro</li>
+      <li id="text-align-right">Alinear derecha</li>
+      <hr>
+      <li id="text-vertical-top">Posición arriba</li>
+      <li id="text-vertical-center">Posición centro</li>
+      <li id="text-vertical-bottom">Posición abajo</li>
+    </ul>
+  </div>
+  
+  
+  <script>
+    /* VARIABLES GLOBALES */
+    let cardId = 0;
+    let currentZoom = 100;
+    let currentLayout = "vertical";
+    let activeCard = null;
+    let imageLibrary = [];
+    let currentImageWrapper = null;
+    let currentTextCard = null;
+    let rotating = false;
+    
+    /* FUNCIONES PARA TARJETAS */
+    function addCard({ title = `Tarjeta ${cardId+1}`, text = "Texto de la tarjeta", content = null, id = null } = {}) {
+      const container = document.getElementById("cards-container");
+      const card = document.createElement("div");
+      if(id === null){ id = cardId++; } else { cardId = Math.max(cardId, parseInt(id)+1); }
+      card.className = "card";
+      card.dataset.id = id;
+      card.innerHTML = `
+        <div class="card-content">
+          <h2 contenteditable="true">${title}</h2>
+          <p contenteditable="true">${text}</p>
+        </div>
+        <div class="card-images"></div>
+        <div class="card-buttons">
+          <button onclick="toggleTitle(this)"><i class="fas fa-font"></i></button>
+          <button onclick="toggleText(this)"><i class="fas fa-align-justify"></i></button>
+          <button onclick="duplicateCard(this)"><i class="fas fa-clone"></i></button>
+          <button onclick="deleteCard(this)"><i class="fas fa-trash"></i></button>
+          <button onclick="openSidePanelForCard(this)"><i class="fas fa-image"></i></button>
+        </div>
+      `;
+      card.addEventListener("click", function(e){
+        if(e.target.closest(".card-buttons") || e.target.closest(".card-images")) return;
+        document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        activeCard = card;
+      });
+      const cardContent = card.querySelector(".card-content");
+      cardContent.addEventListener("contextmenu", function(e){
+        e.preventDefault();
+        currentTextCard = card;
+        showTextContextMenu(e.pageX, e.pageY);
+      });
+      container.appendChild(card);
+    }
+    
+    function toggleTitle(btn) {
+      const card = btn.closest(".card");
+      const title = card.querySelector("h2");
+      title.style.display = title.style.display === "none" ? "block" : "none";
+    }
+    function toggleText(btn) {
+      const card = btn.closest(".card");
+      const p = card.querySelector("p");
+      if(p){ p.style.display = p.style.display === "none" ? "block" : "none"; }
+    }
+    function duplicateCard(btn) {
+      const card = btn.closest(".card");
+      const content = card.querySelector(".card-content").innerHTML;
+      addCard({ content: content });
+    }
+    function deleteCard(btn) {
+      const card = btn.closest(".card");
+      card.remove();
+    }
+    function openSidePanelForCard(btn) {
+      activeCard = btn.closest(".card");
+      openSidePanel();
+    }
+    
+    function saveCourse() {
+      const cards = document.querySelectorAll(".card");
+      const data = [];
+      cards.forEach(card => {
+        const content = card.querySelector(".card-content").innerHTML;
+        data.push({ id: card.dataset.id, content: content });
+      });
+      localStorage.setItem("courseData", JSON.stringify(data));
+      alert("Curso guardado");
+    }
+    function loadCourse() {
+      const container = document.getElementById("cards-container");
+      container.innerHTML = "";
+      const data = JSON.parse(localStorage.getItem("courseData")) || [];
+      data.forEach(item => { addCard({ content: item.content, id: item.id }); });
+    }
+    
+    /* FUNCIONES DE IMAGEN */
+    function addImageToCard(card, src) {
+      const imagesContainer = card.querySelector(".card-images");
+      const wrapper = document.createElement("div");
+      wrapper.className = "card-image-wrapper";
+      wrapper.style.top = "0px";
+      wrapper.style.left = "0px";
+      wrapper.dataset.rotation = "0";
+      wrapper.innerHTML = `<img src="${src}" alt="Imagen">`;
+      
+      // Agregar rotate handle para giro arbitrario
+      const rotateHandle = document.createElement("div");
+      rotateHandle.className = "rotate-handle";
+      rotateHandle.addEventListener("mousedown", function(e){
+        e.stopPropagation();
+        startRotate(e, wrapper);
+      });
+      wrapper.appendChild(rotateHandle);
+      
+      // Agregar resize handles (si no existen ya)
+      addResizeHandles(wrapper);
+      
+      // Hacer el wrapper movible (si se hace clic y no es sobre un handle)
+      wrapper.addEventListener("mousedown", function(e){
+        if(e.target.classList.contains("rotate-handle") || e.target.classList.contains("resize-handle")) return;
+        initDragImage(e, wrapper);
+      });
+      
+      // Menú contextual para imagen
+      wrapper.addEventListener("contextmenu", function(e){
+        e.preventDefault();
+        currentImageWrapper = wrapper;
+        showImageContextMenu(e.pageX, e.pageY);
+      });
+      
+      // Al hacer clic se selecciona la imagen
+      wrapper.addEventListener("click", function(e){
+        e.stopPropagation();
+        card.querySelectorAll(".card-image-wrapper").forEach(w => w.classList.remove("selected-image"));
+        wrapper.classList.add("selected-image");
+      });
+      
+      const img = wrapper.querySelector("img");
+      img.onload = function(){
+        wrapper.style.width = img.naturalWidth + "px";
+        wrapper.style.height = img.naturalHeight + "px";
+      };
+      
+      imagesContainer.appendChild(wrapper);
+    }
+    
+    function addResizeHandles(wrapper) {
+      // Si ya existen, no agregar de nuevo
+      if(wrapper.querySelector(".resize-handle.tl")) return;
+      const tl = document.createElement("div");
+      tl.className = "resize-handle tl";
+      const tr = document.createElement("div");
+      tr.className = "resize-handle tr";
+      const bl = document.createElement("div");
+      bl.className = "resize-handle bl";
+      const br = document.createElement("div");
+      br.className = "resize-handle br";
+      tl.addEventListener("mousedown", initResize);
+      tr.addEventListener("mousedown", initResize);
+      bl.addEventListener("mousedown", initResize);
+      br.addEventListener("mousedown", initResize);
+      wrapper.appendChild(tl);
+      wrapper.appendChild(tr);
+      wrapper.appendChild(bl);
+      wrapper.appendChild(br);
+    }
+    
+    function setBackgroundImage(event, btn) {
+      const card = btn.closest(".card");
+      const file = event.target.files[0];
+      if(file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        fetch("upload.php", { method: "POST", body: formData })
+          .then(res => res.json())
+          .then(data => {
+            if(data.status === "success") {
+              addImageToCard(card, data.url);
+              imageLibrary.push(data.url);
+              updateImageLibrary();
+            } else { alert("Error: " + data.message); }
+          })
+          .catch(err => { console.error(err); alert("Error al subir la imagen."); });
+      }
+    }
+    function handleUploadImage(e) {
+      const file = e.target.files[0];
+      if(file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        fetch("upload.php", { method: "POST", body: formData })
+          .then(res => res.json())
+          .then(data => {
+            if(data.status === "success") {
+              if(activeCard){ addImageToCard(activeCard, data.url); }
+              imageLibrary.push(data.url);
+              updateImageLibrary();
+            } else { alert("Error: " + data.message); }
+          })
+          .catch(err => { console.error(err); alert("Error al subir la imagen."); });
+      }
+    }
+    function updateImageLibrary() {
+      const libraryDiv = document.getElementById("image-library");
+      libraryDiv.innerHTML = "";
+      imageLibrary.forEach(src => {
+        const img = document.createElement("img");
+        img.src = src;
+        img.style.cursor = "pointer";
+        img.addEventListener("click", function(){
+          if(activeCard){ addImageToCard(activeCard, src); }
+        });
+        libraryDiv.appendChild(img);
+      });
+    }
+    
+    /* FUNCIONES DE DRAG (mover imagen) */
+    let dragData = {};
+    function initDragImage(e, wrapper) {
+      dragData.startX = e.clientX;
+      dragData.startY = e.clientY;
+      dragData.wrapper = wrapper;
+      dragData.initialLeft = parseFloat(wrapper.style.left) || 0;
+      dragData.initialTop = parseFloat(wrapper.style.top) || 0;
+      document.addEventListener("mousemove", doDragImage);
+      document.addEventListener("mouseup", stopDragImage);
+    }
+    function doDragImage(e) {
+      e.preventDefault();
+      let dx = e.clientX - dragData.startX;
+      let dy = e.clientY - dragData.startY;
+      dragData.wrapper.style.left = (dragData.initialLeft + dx) + "px";
+      dragData.wrapper.style.top = (dragData.initialTop + dy) + "px";
+    }
+    function stopDragImage(e) {
+      document.removeEventListener("mousemove", doDragImage);
+      document.removeEventListener("mouseup", stopDragImage);
+    }
+    
+    /* FUNCIONES DE RESIZE */
+    let resizeData = {};
+    function initResize(e) {
+      e.stopPropagation();
+      resizeData.handle = e.target;
+      resizeData.startX = e.clientX;
+      resizeData.startY = e.clientY;
+      const wrapper = e.target.parentElement;
+      resizeData.wrapper = wrapper;
+      resizeData.startWidth = wrapper.offsetWidth;
+      resizeData.startHeight = wrapper.offsetHeight;
+      resizeData.startLeft = parseFloat(wrapper.style.left) || 0;
+      resizeData.startTop = parseFloat(wrapper.style.top) || 0;
+      document.addEventListener("mousemove", doResize);
+      document.addEventListener("mouseup", stopResize);
+    }
+    function doResize(e) {
+      e.preventDefault();
+      const dx = e.clientX - resizeData.startX;
+      const dy = e.clientY - resizeData.startY;
+      const handle = resizeData.handle;
+      const wrapper = resizeData.wrapper;
+      if(handle.classList.contains("tl")){
+        wrapper.style.width = (resizeData.startWidth - dx) + "px";
+        wrapper.style.height = (resizeData.startHeight - dy) + "px";
+        wrapper.style.left = (resizeData.startLeft + dx) + "px";
+        wrapper.style.top = (resizeData.startTop + dy) + "px";
+      } else if(handle.classList.contains("tr")){
+        wrapper.style.width = (resizeData.startWidth + dx) + "px";
+        wrapper.style.height = (resizeData.startHeight - dy) + "px";
+        wrapper.style.top = (resizeData.startTop + dy) + "px";
+      } else if(handle.classList.contains("bl")){
+        wrapper.style.width = (resizeData.startWidth - dx) + "px";
+        wrapper.style.height = (resizeData.startHeight + dy) + "px";
+        wrapper.style.left = (resizeData.startLeft + dx) + "px";
+      } else if(handle.classList.contains("br")){
+        wrapper.style.width = (resizeData.startWidth + dx) + "px";
+        wrapper.style.height = (resizeData.startHeight + dy) + "px";
+      }
+    }
+    function stopResize(e) {
+      document.removeEventListener("mousemove", doResize);
+      document.removeEventListener("mouseup", stopResize);
+    }
+    
+    /* FUNCIONES DE ROTACIÓN */
+   
+    function startRotate(e, wrapper) {
+      rotating = true;
+      document.addEventListener("mousemove", doRotate);
+      document.addEventListener("mouseup", stopRotate);
+      const rect = wrapper.getBoundingClientRect();
+      wrapper.dataset.centerX = rect.left + rect.width/2;
+      wrapper.dataset.centerY = rect.top + rect.height/2;
+      wrapper.dataset.startAngle = Math.atan2(e.pageY - wrapper.dataset.centerY, e.pageX - wrapper.dataset.centerX) * (180/Math.PI);
+      wrapper.dataset.initialRotation = wrapper.dataset.rotation;
+      currentImageWrapper = wrapper;
+    }
+    function doRotate(e) {
+      if(!rotating || !currentImageWrapper) return;
+      const wrapper = currentImageWrapper;
+      const centerX = parseFloat(wrapper.dataset.centerX);
+      const centerY = parseFloat(wrapper.dataset.centerY);
+      const angle = Math.atan2(e.pageY - centerY, e.pageX - centerX) * (180/Math.PI);
+      const startAngle = parseFloat(wrapper.dataset.startAngle);
+      let newRotation = parseFloat(wrapper.dataset.initialRotation) + (angle - startAngle);
+      wrapper.dataset.rotation = newRotation;
+      wrapper.style.transform = `rotate(${newRotation}deg)`;
+    }
+    function stopRotate(e) {
+      rotating = false;
+      document.removeEventListener("mousemove", doRotate);
+      document.removeEventListener("mouseup", stopRotate);
+    }
+    
+    /* MENÚ CONTEXTUAL PARA IMAGEN */
+    function showImageContextMenu(x, y) {
+      const menu = document.getElementById("image-context-menu");
+      menu.style.display = "block";
+      menu.style.left = x + "px";
+      menu.style.top = y + "px";
+    }
+    function hideImageContextMenu() {
+      document.getElementById("image-context-menu").style.display = "none";
+    }
+    document.getElementById("img-context-delete").addEventListener("click", function(){
+      if(currentImageWrapper){ currentImageWrapper.remove(); currentImageWrapper = null; }
+      hideImageContextMenu();
+    });
+    document.getElementById("img-context-fullscreen").addEventListener("click", function(){
+      if(currentImageWrapper && activeCard) {
+        const cardContent = activeCard.querySelector(".card-content");
+        currentImageWrapper.style.width = cardContent.offsetWidth + "px";
+        currentImageWrapper.style.height = cardContent.offsetHeight + "px";
+        currentImageWrapper.style.top = "0px";
+        currentImageWrapper.style.left = "0px";
+      }
+      hideImageContextMenu();
+    });
+    document.getElementById("img-context-thumbnail").addEventListener("click", function(){
+      if(currentImageWrapper && activeCard) {
+        const cardContent = activeCard.querySelector(".card-content");
+        currentImageWrapper.style.width = (cardContent.offsetWidth * 0.3) + "px";
+        currentImageWrapper.style.height = (cardContent.offsetHeight * 0.3) + "px";
+      }
+      hideImageContextMenu();
+    });
+    document.addEventListener("click", function(e){
+      if(!e.target.closest(".card-image-wrapper")){
+        document.querySelectorAll(".card-image-wrapper.selected-image").forEach(wrapper => {
+          wrapper.classList.remove("selected-image");
+        });
+        hideImageContextMenu();
+      }
+      if(!e.target.closest("#text-context-menu")){
+        hideTextContextMenu();
+      }
+    });
+    
+    /* MENÚ CONTEXTUAL PARA TEXTO */
+    function showTextContextMenu(x, y) {
+      const menu = document.getElementById("text-context-menu");
+      menu.style.display = "block";
+      menu.style.left = x + "px";
+      menu.style.top = y + "px";
+    }
+    function hideTextContextMenu() {
+      document.getElementById("text-context-menu").style.display = "none";
+    }
+    document.getElementById("text-align-left").addEventListener("click", function(){
+      if(currentTextCard){
+        currentTextCard.querySelector(".card-content").style.textAlign = "left";
+      }
+      hideTextContextMenu();
+    });
+    document.getElementById("text-align-center").addEventListener("click", function(){
+      if(currentTextCard){
+        currentTextCard.querySelector(".card-content").style.textAlign = "center";
+      }
+      hideTextContextMenu();
+    });
+    document.getElementById("text-align-right").addEventListener("click", function(){
+      if(currentTextCard){
+        currentTextCard.querySelector(".card-content").style.textAlign = "right";
+      }
+      hideTextContextMenu();
+    });
+    document.getElementById("text-vertical-top").addEventListener("click", function(){
+      if(currentTextCard){
+        const content = currentTextCard.querySelector(".card-content");
+        content.style.display = "flex";
+        content.style.flexDirection = "column";
+        content.style.justifyContent = "flex-start";
+      }
+      hideTextContextMenu();
+    });
+    document.getElementById("text-vertical-center").addEventListener("click", function(){
+      if(currentTextCard){
+        const content = currentTextCard.querySelector(".card-content");
+        content.style.display = "flex";
+        content.style.flexDirection = "column";
+        content.style.justifyContent = "center";
+      }
+      hideTextContextMenu();
+    });
+    document.getElementById("text-vertical-bottom").addEventListener("click", function(){
+      if(currentTextCard){
+        const content = currentTextCard.querySelector(".card-content");
+        content.style.display = "flex";
+        content.style.flexDirection = "column";
+        content.style.justifyContent = "flex-end";
+      }
+      hideTextContextMenu();
+    });
+    
+    /* LAYOUT Y ZOOM */
+    function toggleLayout() {
+      const container = document.getElementById("cards-container");
+      const btn = document.getElementById("toggle-layout");
+      if(currentLayout === "vertical"){
+        container.classList.add("horizontal-layout");
+        currentLayout = "horizontal";
+        btn.textContent = "Layout: Horizontal";
+      } else {
+        container.classList.remove("horizontal-layout");
+        currentLayout = "vertical";
+        btn.textContent = "Layout: Vertical";
+      }
+    }
+    function updateZoom() {
+      const container = document.getElementById("cards-container");
+      container.style.transform = `scale(${currentZoom/100})`;
+      document.getElementById("zoom-level").textContent = currentZoom + "%";
+    }
+    
+    /* PANEL LATERAL */
+    function openSidePanel() {
+      document.getElementById("side-panel").classList.add("open");
+      showTab("images");
+    }
+    function closeSidePanel() {
+      document.getElementById("side-panel").classList.remove("open");
+    }
+    function showTab(tabName) {
+      document.querySelectorAll("#side-panel .tab-pane").forEach(pane => pane.classList.remove("active"));
+      document.getElementById(tabName + "-tab").classList.add("active");
+      document.querySelectorAll("#side-panel #tabs .tab").forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.tab === tabName);
+      });
+    }
+    
+    /* INICIALIZACIÓN */
+    function initializeEditor() {
+      const container = document.getElementById("cards-container");
+      if(container.children.length === 0){ addCard(); }
+      updateZoom();
+      document.getElementById("zoom-in").addEventListener("click", function(){
+        currentZoom += 5; updateZoom();
+      });
+      document.getElementById("zoom-out").addEventListener("click", function(){
+        currentZoom = Math.max(5, currentZoom - 5); updateZoom();
+      });
+    }
+    window.onload = initializeEditor;
+    document.addEventListener("DOMContentLoaded", function(){
+      document.getElementById("upload-image-btn").addEventListener("click", function(){
+        document.getElementById("upload-image-input").click();
+      });
+      document.getElementById("canvas").addEventListener("wheel", function(e){
+        if(currentLayout === "horizontal"){
+          e.preventDefault();
+          this.scrollLeft += e.deltaY;
+        }
+      });
+    });
+    
+    /* FUNCIONES VACÍAS PARA BOTONES NO IMPLEMENTADOS */
+    function addVideo(){ alert("Funcionalidad de video no implementada."); }
+    function addQuiz(){ alert("Funcionalidad de quiz no implementada."); }
+    function addAudio(){ alert("Funcionalidad de audio no implementada."); }
+    function addForm(){ alert("Funcionalidad de formulario no implementada."); }
+    function addSurvey(){ alert("Funcionalidad de encuesta no implementada."); }
+    function addTextButton(){ alert("Funcionalidad de botón de texto no implementada."); }
+  </script>
+  
+ 
+</body>
+</html>

@@ -1,0 +1,214 @@
+{
+    "chevrons": true,
+    "screens": [
+        {
+            "title": "Nuevo T\u00edtulo",
+            "background-color": "white",
+            "background-image": "",
+            "background-size": "cover",
+            "render": [
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "image",
+                    "url": "https:\/\/media3.giphy.com\/media\/v1.Y2lkPTI4YmM4MWRkZzRhZWp0eWh6dGNvMDl0YzdxemFvOG00dzJ4dzI5N3FyY2tiazhoYyZlcD12MV9naWZzX3NlYXJjaCZjdD1n\/5K7ngCtszoxxbaBieC\/200.gif",
+                    "posx": 45,
+                    "posy": 54,
+                    "width": 55,
+                    "height": 31,
+                    "rotate": 0,
+                    "z-index": 1
+                },
+                {
+                    "type": "image",
+                    "url": "https:\/\/media3.giphy.com\/media\/l4pTfx2qLszoacZRS\/200.gif?cid=28bc81ddg4aejtyhztco09tc7qzao8m4w2xw297qrckbk8hc&ep=v1_gifs_search&rid=200.gif&ct=g",
+                    "posx": -4,
+                    "posy": 62,
+                    "width": 55,
+                    "height": 31,
+                    "rotate": 0,
+                    "z-index": 1
+                }
+            ]
+        },
+        {
+            "title": "Nuevo T\u00edtulo",
+            "background-color": "white",
+            "background-image": "",
+            "background-size": "cover",
+            "render": [
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 7,
+                    "posy": 21,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "image",
+                    "url": "http:\/\/127.0.0.1\/elearnig_editor\/uploads\/67a7ef6ae4107_100.gif",
+                    "posx": 11,
+                    "posy": 51,
+                    "width": 28,
+                    "height": 16,
+                    "rotate": 0,
+                    "z-index": 1
+                }
+            ]
+        },
+        {
+            "title": "Nuevo T\u00edtulo",
+            "background-color": "white",
+            "background-image": "",
+            "background-size": "cover",
+            "render": [
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "image",
+                    "url": "https:\/\/media2.giphy.com\/media\/RLEdq1A9PT0BZo27s3\/200.gif?cid=28bc81ddg4aejtyhztco09tc7qzao8m4w2xw297qrckbk8hc&ep=v1_gifs_search&rid=200.gif&ct=g",
+                    "posx": 8,
+                    "posy": 27,
+                    "width": 55,
+                    "height": 31,
+                    "rotate": 0,
+                    "z-index": 1
+                },
+                {
+                    "type": "image",
+                    "url": "https:\/\/media4.giphy.com\/media\/fUQ4rhUZJYiQsas6WD\/200.gif?cid=28bc81ddg4aejtyhztco09tc7qzao8m4w2xw297qrckbk8hc&ep=v1_gifs_search&rid=200.gif&ct=g",
+                    "posx": 12,
+                    "posy": 62,
+                    "width": 74,
+                    "height": 31,
+                    "rotate": 0,
+                    "z-index": 1
+                }
+            ]
+        }
+    ]
+}

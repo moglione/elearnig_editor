@@ -1,0 +1,14 @@
+[
+    {
+        "id": "0",
+        "content": "\n      <div class=\"card-images\"><div class=\"card-image-wrapper\" style=\"top: 126px; left: 16px; width: 275px; height: 425px;\"><img src=\"uploads\/1741040188_0e6195952d79c4cf940b6cf43ae72664.gif\"><\/div><\/div>\n    <div class=\"text-layer\">\n    <h2 contenteditable=\"true\">Nuevo T\u00edtulo<\/h2>\n    <p contenteditable=\"true\">Nuevo Texto<\/p>\n  <\/div>"
+    },
+    {
+        "id": "1",
+        "content": "\n      <div class=\"card-images\"><\/div>\n    <div class=\"text-layer\" style=\"left: 65px; top: 344px;\">\n    <h2 contenteditable=\"true\">Nuevo T\u00edtulo<\/h2>\n    <p contenteditable=\"true\">Nuevo Texto<\/p>\n  <\/div><div class=\"text-layer\" style=\"left: 109px; top: 171px; transform: rotate(22.6341deg); background-color: rgb(157, 52, 52); color: rgb(250, 244, 244);\" data-rotation=\"22.634085502026807\">\n    <h2 contenteditable=\"true\">Nuevo T\u00edtulo<\/h2>\n    <p contenteditable=\"true\">Nuevo Texto<\/p>\n  <\/div>"
+    },
+    {
+        "id": "2",
+        "content": "\n      <div class=\"card-images\"><\/div>\n    <div class=\"text-layer\" style=\"left: 96px; top: 289px; width: 205px; height: 312px; font-size: 29px; justify-content: flex-end;\">\n    <h2 contenteditable=\"true\">Nuevo T\u00edtulo<\/h2>\n    <p contenteditable=\"true\">Nuevo Texto<\/p>\n  <\/div>"
+    }
+]

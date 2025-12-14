@@ -1,0 +1,101 @@
+{
+    "chevrons": true,
+    "screens": [
+        {
+            "title": "Nuevo T\u00edtulo",
+            "background-color": "white",
+            "background-image": "",
+            "background-size": "cover",
+            "render": [
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "video",
+                    "url": "http:\/\/127.0.0.1\/elearnig_editor\/uploads\/1741054676_0650bdcd8f679c025ceb6f0c6cc51a90.mp4",
+                    "position-x": -2,
+                    "position-y": 0,
+                    "width": 102,
+                    "height": 102,
+                    "z-index": 1,
+                    "size": "fullscreen"
+                }
+            ]
+        },
+        {
+            "title": "Nuevo T\u00edtulo",
+            "background-color": "white",
+            "background-image": "",
+            "background-size": "cover",
+            "render": [
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "text",
+                    "text": "Nuevo T\u00edtulo\n\nNuevo Texto",
+                    "posx": 6,
+                    "posy": 3,
+                    "width": 46,
+                    "height": 13,
+                    "align-vertical": "normal",
+                    "align-horizontal": "start",
+                    "text-size": 16,
+                    "color": "rgb(0, 0, 0)",
+                    "background": "rgba(0, 0, 0, 0)",
+                    "text-weight": "400",
+                    "z-index": "3"
+                },
+                {
+                    "type": "video",
+                    "url": "http:\/\/127.0.0.1\/elearnig_editor\/uploads\/1741054698_713eed0f0a43353ffd5080c9490f9d0f.mp4",
+                    "position-x": -3,
+                    "position-y": -2,
+                    "width": 103,
+                    "height": 103,
+                    "z-index": 1,
+                    "size": "fullscreen"
+                }
+            ]
+        }
+    ]
+}

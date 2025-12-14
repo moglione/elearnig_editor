@@ -1,0 +1,212 @@
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ETA-T3 Editor</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <!-- Enlazamos el archivo CSS externo -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="main-wrapper">
+    <div class="canvas" id="canvas">
+      <!-- Contenedor de tarjetas -->
+      <div id="cards-container"></div>
+      <!-- Controles de zoom -->
+      <div class="zoom-controls">
+        <button id="zoom-out"><i class="fas fa-search-minus"></i></button>
+        <span id="zoom-level">100%</span>
+        <button id="zoom-in"><i class="fas fa-search-plus"></i></button>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="toolButton" onclick="addCard()"><i class="fas fa-file-alt"></i></div>
+      <div class="toolButton" id="agregarImagenBoton" onclick="openSidePanelForImage()"><i class="fas fa-image"></i></div>
+      <div class="toolButton" onclick="addVideo()"><i class="fas fa-video"></i></div>
+      <div class="toolButton" onclick="addQuiz()"><i class="fas fa-question-circle"></i></div>
+      <div class="toolButton" onclick="addAudio()"><i class="fas fa-music"></i></div>
+      <div class="toolButton" onclick="addForm()"><i class="fas fa-edit"></i></div>
+      <div class="toolButton" onclick="addSurvey()"><i class="fas fa-chart-pie"></i></div>
+      <div class="toolButton" onclick="addTextButton()"><i class="fas fa-dot-circle"></i></div>
+    </div>
+    <div class="title-bar">
+      <span>ETA-T3 Editor</span>
+      <div>
+        <!-- Funciones de servidor para guardar y cargar cursos -->
+        <button onclick="serverCompileCourse()">compilar Curso</button>
+        <button onclick="serverSaveCourse()">Guardar</button>
+        <button onclick="serverLoadCourse()">Cargar</button>
+        <button id="toggle-layout" onclick="toggleLayout()">Layout: Vertical</button>
+      </div>
+    </div>
+
+    <!-- PANEL LATERAL -->
+    <div id="side-panel">
+      <div id="side-panel-header">
+        <span style="font-weight:bold;">Biblioteca</span>
+        <button onclick="closeSidePanel()" style="background:transparent; border:none; font-size:20px; cursor:pointer;">&times;</button>
+      </div>
+      <div id="tabs">
+        <div class="tab active" data-tab="images" onclick="showTab('images')">Imagen</div>
+        <div class="tab" data-tab="gifs" onclick="showTab('gifs')">GIF animados</div>
+        <div class="tab" data-tab="unsplash" onclick="showTab('unsplash')">Unsplash</div>
+      </div>
+      <div id="tab-content">
+        <div id="images-tab" class="tab-pane active">
+          <div id="image-library"></div>
+          <button id="upload-image-btn" style="margin-top:10px; padding:5px 10px;">Cargar imagen</button>
+          <input type="file" id="upload-image-input" accept="image/*" style="display:none;" onchange="handleUploadImage(event)">
+        </div>
+        <div id="gifs-tab" class="tab-pane">
+          <div id="giphy-search">
+            <input type="text" id="giphy-query" placeholder="Buscar GIFs...">
+            <button onclick="searchGiphy()">Buscar</button>
+          </div>
+          <div id="giphy-results"></div>
+        </div>
+        
+        <div id="unsplash-tab" class="tab-pane">
+          <div id="unsplash-search">
+            <input type="text" id="unsplash-query" placeholder="Buscar en Unsplash...">
+            <button onclick="searchUnsplash()">Buscar</button>
+          </div>
+          <div id="unsplash-results"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Panel de Formato de Texto -->
+    <div id="text-panel">
+      <div class="panel-header">Formato de Texto</div>
+      <div class="panel-content">
+        <!-- Botones de alineación horizontal (ya existentes) -->
+        <div class="align-buttons">
+          <button id="align-left" title="Alinear izquierda"><i class="fas fa-align-left"></i></button>
+          <button id="align-center" title="Alinear centro"><i class="fas fa-align-center"></i></button>
+          <button id="align-right" title="Alinear derecha"><i class="fas fa-align-right"></i></button>
+        </div>
+        <!-- Nuevos botones de alineación vertical -->
+        <div class="vertical-align-buttons">
+          <button id="align-top" title="Posición arriba"><i class="fas fa-arrow-up"></i></button>
+          <button id="align-middle" title="Posición centro"><i class="fas fa-arrows-alt-v"></i></button>
+          <button id="align-bottom" title="Posición abajo"><i class="fas fa-arrow-down"></i></button>
+        </div>
+        <!-- Control de tamaño de fuente -->
+        <div class="font-size-control">
+          <label for="font-size-input">Tamaño:</label>
+          <input type="number" id="font-size-input" min="8" max="72" value="16">
+        </div>
+        <!-- Botones de estilo de texto -->
+        <div class="text-style-buttons">
+          <button id="toggle-bold" title="Negrita"><i class="fas fa-bold"></i></button>
+          <button id="toggle-underline" title="Subrayado"><i class="fas fa-underline"></i></button>
+        </div>
+        <!-- Controles de color -->
+        <div class="color-controls">
+          <label for="text-color-input">Color:</label>
+          <input type="color" id="text-color-input" value="#000000">
+        </div>
+        <div class="bg-color-controls">
+          <label for="bg-color-input">Fondo:</label>
+          <input type="color" id="bg-color-input" value="#ffffff">
+        </div>
+        <!-- Botones toggle para ocultar/mostrar título y párrafo -->
+        <div class="toggle-text-buttons">
+          <button id="toggle-title" title="Ocultar/mostrar título"><i class="fas fa-eye"></i> Título</button>
+          <button id="toggle-paragraph" title="Ocultar/mostrar texto"><i class="fas fa-eye"></i> Texto</button>
+        </div>
+        <!-- Botones para traer al frente y enviar al fondo -->
+        <div class="z-index-buttons">
+          <button id="bring-to-front" title="Traer al frente"><i class="fas fa-arrow-up"></i></button>
+          <button id="send-to-back" title="Enviar al fondo"><i class="fas fa-arrow-down"></i></button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Video Bar -->
+    <div id="video-bar">
+      <div id="video-bar-header">
+        <span style="font-weight:bold;">Biblioteca de Videos</span>
+        <button onclick="closeVideoBar()" style="background:transparent; border:none; font-size:20px; cursor:pointer;">&times;</button>
+      </div>
+      <div id="video-bar-content">
+        <div id="video-library"></div>
+        <button id="upload-video-btn" style="margin-top:10px; padding:5px 10px;">Cargar video</button>
+        <input type="file" id="upload-video-input" accept="video/*" style="display:none;" onchange="handleUploadVideo(event)">
+      </div>
+    </div>
+
+
+    <!-- Modal para guardar curso -->
+    <div id="save-course-modal">
+      <div id="save-course-modal-content">
+        <h2>Guardar Curso</h2>
+        <label for="course-name-input">Nombre del curso:</label>
+        <input type="text" id="course-name-input" placeholder="Ingrese el nombre del curso">
+        <p>Haga clic en un curso de la lista para sobreescribirlo.</p>
+        <ul id="course-list-save"></ul>
+        <button onclick="saveCourse()">Guardar</button>
+        <button onclick="closeSaveCourseModal()">Cancelar</button>
+      </div>
+    </div>
+
+
+    <!-- Modal para guardar curso compilado -->
+    <div id="save-compiled-modal">
+      <div id="save-compiled-modal-content">
+        <h2>Guardar Curso compilado</h2>
+        <label for="course-name-input">Nombre del curso:</label>
+        <input type="text" id="compiled-name-input" placeholder="Ingrese el nombre del curso">
+        <p>Haga clic en un curso de la lista para sobreescribirlo.</p>
+        <ul id="compiled-list-save"></ul>
+        <button onclick="saveCompileCourse()">Guardar</button>
+        <button onclick="closeSaveCompiledModal()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- Modal para cargar curso -->
+    <div id="load-course-modal">
+      <div id="load-course-modal-content">
+        <h2>Seleccione un curso</h2>
+        <ul id="course-list-load"></ul>
+        <button onclick="closeLoadCourseModal()">Cancelar</button>
+      </div>
+    </div>
+
+
+    
+    <!-- Menú contextual para imagen -->
+    <div id="image-context-menu">
+      <ul>
+        <li onclick="contextImageChange()" class="open-side-panel-btn">
+          <i class="fas fa-sync-alt"></i> Cambiar imagen
+        </li>
+        <li onclick="contextImageDelete()">
+          <i class="fas fa-trash-alt"></i> Borra imagen
+        </li>
+        <li onclick="contextImageFullScreen()">
+          <i class="fas fa-expand"></i> Full screen
+        </li>
+        <li onclick="contextImageThumbnail()">
+          <i class="fas fa-image"></i> Thumbnail
+        </li>
+        <li onclick="contextImageBringToFront()">
+          <i class="fas fa-arrow-up"></i> Traer al frente
+        </li>
+        <li onclick="contextImageSendToBack()">
+          <i class="fas fa-arrow-down"></i> Llevar al fondo
+        </li>
+      </ul>
+    </div>
+    
+  </div>
+
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Enlazamos el archivo JavaScript externo -->
+  <script src="script.js"></script>
+</body>
+</html>

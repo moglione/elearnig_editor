@@ -1,0 +1,566 @@
+/* Estilos base */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  font-family: Arial, sans-serif;
+  height: 100vh;
+  background: #e0e0e0;
+  overflow: hidden;
+}
+.main-wrapper {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  display: flex;
+}
+.title-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: transparent;
+  color: #0e0e0e;
+  padding: 15px;
+  font-size: 20px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 2000;
+  padding-right: 30px;
+}
+.title-bar button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-left: 5px;
+}
+.sidebar {
+  width: 80px;
+  background: rgba(255,255,255,0.9);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 10px;
+  padding-left: 8px;
+  padding-bottom: 5px;
+  gap: 10px;
+  border-bottom-right-radius: 10px;
+  border-top-right-radius: 10px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1000;
+  box-shadow: 0 0 0.6em #0000001f;
+}
+.toolButton {
+  background: transparent;
+  border: none;
+  color: rgba(0,0,0,0.5);
+  cursor: pointer;
+  padding: 10px;
+  font-size: 20px;
+  border-radius: 5px;
+  width: 90%;
+  text-align: center;
+}
+.toolButton:hover { background: rgba(128,128,128,0.5); }
+/* Canvas y contenedor de tarjetas */
+.canvas {
+  flex-grow: 1;
+  height: 100vh;
+  overflow-y: auto;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  z-index: 100;
+  padding-top: 0;
+}
+#cards-container {
+  position: relative;
+  transform-origin: top center;
+  transition: transform 0.2s ease;
+  padding-top: 150px;
+}
+.card {
+  width: auto;
+  height: 70vh;
+  aspect-ratio: 9/16;
+  border-radius: 15px;
+  background: white;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 80px;
+  box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+  padding: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: pointer;
+  transition: border 0.2s ease;
+}
+.card.selected { border: 2px solid #007bff; }
+/* La capa de fondo: lo que se guarda (sin elementos transitorios) */
+.card-content {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  z-index: 1;
+  border-radius:15px;
+}
+
+.card.selected .card-buttons {
+  display: flex;
+}
+
+/*Capa de texto:  Modificación 2: Permitir mover y rotar el texto */
+.text-layer {
+  position: absolute;
+  top: 20px;   /* Valor inicial, ajústalo según convenga */
+  left: 20px;  /* Valor inicial, ajústalo según convenga */
+  z-index: 3;
+  cursor: move;
+  display:flex;
+  flex-direction: column;
+}
+
+
+.text-layer h2, .text-layer p { margin: 10px; }
+/* Área de imágenes: en capa intermedia */
+.card-images {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+.card-buttons {
+  display: none;
+  gap: 10px;
+  justify-content: center;
+  position: absolute;
+  bottom: -50px;
+  z-index: 2;
+}
+.card-buttons button {
+  background: #ff5722;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 18px;
+  font-size: 16px;
+  width: 36px;
+  height: 36px;
+}
+/* Wrapper de la imagen: sin elementos transitorios guardados */
+.card-image-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 4;
+}
+.card-image-wrapper img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.card-image-wrapper.selected-image {
+  border: 2px dashed #007bff;
+}
+/* Rotate-handle: se posiciona 30px arriba del wrapper */
+.rotate-handle {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 50%;
+  cursor: grab;
+  z-index: 10;
+}
+/* Resize handles */
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #007bff;
+  border: 1px solid #fff;
+  z-index: 10;
+}
+.resize-handle.tl { top: -5px; left: -5px; cursor: nwse-resize; }
+.resize-handle.tr { top: -5px; right: -5px; cursor: nesw-resize; }
+.resize-handle.bl { bottom: -5px; left: -5px; cursor: nesw-resize; }
+.resize-handle.br { bottom: -5px; right: -5px; cursor: nwse-resize; }
+/* Controles de zoom */
+.zoom-controls {
+  position: fixed;
+  bottom: 10px;
+  right: 40px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(0,0,0,0.5);
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: white;
+  font-size: 16px;
+  z-index: 1100;
+}
+.zoom-controls button {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 20px;
+}
+/* Layout horizontal (opcional) */
+#cards-container.horizontal-layout {
+  position: absolute;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-left: 50vw;
+  margin-left: -200px;
+  width: max-content;
+  height: 98vh;
+  top: 0;
+  gap: 40px;
+  padding-right: 25vw;
+}
+#cards-container.horizontal-layout .card {
+  left: 0;
+  transform: none;
+  margin: 10px;
+  margin-bottom: 0;
+}
+/* PANEL LATERAL */
+#side-panel {
+  position: absolute;
+  right: -25vw;
+  top: 0px;
+  width: 25vw;
+  height: 100vh ;
+  background: #fff;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+  transform: translateX(100%);
+  transition: right 0.5s ease;
+  z-index: 1500;
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+}
+#side-panel.open { right: 25vw; }
+#side-panel #side-panel-header {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#side-panel #tabs {
+  display: flex;
+  border-bottom: 1px solid #ccc;
+}
+#side-panel #tabs .tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+}
+#side-panel #tabs .tab.active {
+  background: #f0f0f0;
+  font-weight: bold;
+}
+#side-panel .tab-pane {
+  flex-grow: 1;
+  display: none;
+  padding: 10px;
+  overflow-y: auto;
+}
+#side-panel .tab-pane.active { display: block; }
+/* Biblioteca de imágenes */
+#image-library {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+#image-library img {
+  width: 48%;
+  object-fit: cover;
+  cursor: pointer;
+}
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(128,128,128,0.9);
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0,0);
+}
+::-webkit-scrollbar-track {
+  background-color: rgba(255,255,255,0);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-button { display: none; }
+/* Menú contextual para imagen */
+#image-context-menu {
+  display: none;
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ccc;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  z-index: 10000;
+}
+#image-context-menu ul { list-style: none; margin: 0; padding: 5px; }
+#image-context-menu li { padding: 5px; cursor: pointer; }
+#image-context-menu li:hover { background: #f0f0f0; }
+/* Menú contextual para texto */
+#text-context-menu {
+  display: none;
+  position: absolute;
+  background: #fff;
+  border: 1px solid #ccc;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  z-index: 10000;
+}
+#text-context-menu ul { list-style: none; margin: 0; padding: 5px; }
+#text-context-menu li { padding: 5px; cursor: pointer; }
+#text-context-menu li:hover { background: #f0f0f0; }
+
+/* Modal para listar cursos */
+/* Estilos para los modales de guardar y cargar curso */
+#save-course-modal,
+#load-course-modal {
+  display: none;                /* Ocultos por defecto */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Estilos para el contenido de los modales */
+#save-course-modal-content,
+#load-course-modal-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  width: 50%;
+  max-width: 500px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Título de los modales */
+#save-course-modal-content h2,
+#load-course-modal-content h2 {
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* Estilos para el campo de entrada y la lista de cursos */
+#course-name-input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+#course-list-save,
+#course-list-load {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+#course-list-save li,
+#course-list-load li {
+  padding: 8px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+#course-list-save li:hover,
+#course-list-load li:hover {
+  background: #f0f0f0;
+}
+
+/* Opcional: Estilos para los botones dentro de los modales */
+#save-course-modal-content button,
+#load-course-modal-content button {
+  padding: 8px 12px;
+  margin-top: 10px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  background: #007bff;
+  color: #fff;
+}
+
+#save-course-modal-content button:hover,
+#load-course-modal-content button:hover {
+  background: #0056b3;
+}
+
+
+/* Estilos para los resultados de Giphy (thumbnails) */
+#giphy-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+#giphy-results img {
+  width: 100%;
+  display: block;
+  cursor: pointer;
+}
+
+
+/* Ocultar resize handles por defecto */
+.card-image-wrapper .resize-handle,
+.text-layer .resize-handle {
+  display: none;
+}
+
+/* Mostrar resize handles solo cuando el contenedor esté seleccionado */
+.card-image-wrapper.selected-image .resize-handle,
+.text-layer.selected-text .resize-handle {
+  display: block;
+}
+
+
+/* Ocultar los handles de rotación por defecto */
+.card-image-wrapper .rotate-handle,
+.text-layer .rotate-handle {
+  display: none;
+}
+
+/* Mostrar el handle de rotación solo en el contenedor seleccionado */
+.card-image-wrapper.selected-image .rotate-handle,
+.text-layer.selected-text .rotate-handle {
+  display: block;
+}
+
+/* Para que el text-layer seleccionado tenga un borde punteado */
+.text-layer.selected-text {
+  border: 1px dashed blue;
+}
+
+/* Asegurarse de que los handles (rotación y redimensionamiento) se muestren solo cuando el text-layer esté seleccionado */
+.text-layer .rotate-handle,
+.text-layer .resize-handle {
+  display: none;
+}
+
+.text-layer.selected-text .rotate-handle,
+.text-layer.selected-text .resize-handle {
+  display: block;
+}
+
+
+/* Panel de formato de texto */
+/* Estilo similar al panel de la biblioteca de imágenes */
+/* Estilos para el text-panel como menú contextual */
+/* Estilo base para el menú contextual del texto */
+#text-panel {
+  position: fixed;              /* Fijo respecto a la ventana */
+  background-color: #fff;       /* Fondo blanco */
+  border-radius: 8px;           /* Bordes redondeados */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Sombra sutil */
+  padding: 12px;                /* Espaciado interno */
+  z-index: 1500;
+  display: none;                /* Oculto por defecto */
+  min-width: 220px;             /* Ancho mínimo */
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  color: #333;
+  opacity: 0;                   /* Para transición de aparición */
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: scale(0.95);
+}
+
+/* Cuando se activa (por ejemplo, al agregar la clase "open") */
+#text-panel.open {
+  display: block;
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Puntero del menú contextual (triángulo) */
+#text-panel::before {
+  content: "";
+  position: absolute;
+  top: -10px;           /* Ajusta según dónde quieras el puntero */
+  left: 20px;           /* Ajusta para alinear con el activador */
+  border-width: 0 10px 10px 10px;
+  border-style: solid;
+  border-color: transparent transparent #fff transparent;
+}
+
+/* Estilos para los botones dentro del menú */
+#text-panel button {
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  margin: 2px 0;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+#text-panel button:hover {
+  background-color: #f0f0f0;
+}
+
+/* Estilos para los inputs (por ejemplo, para tamaño y color) */
+#text-panel input[type="number"],
+#text-panel input[type="color"] {
+  width: 100%;
+  padding: 4px 6px;
+  margin: 4px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Distribución interna del panel */
+#text-panel .panel-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+#text-panel .panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}

@@ -1,0 +1,14 @@
+[
+    {
+        "id": "1",
+        "content": "\n      <div class=\"card-images\"><div class=\"card-image-wrapper\" style=\"top: -30px; left: -24px; width: 369px; height: 357px;\"><img src=\"uploads\/1741135128_5f41e8ddcf820341f00e2cca310aec3a.gif\"><\/div><\/div>\n    <div class=\"text-layer\" style=\"left: 2px; top: 369px;\">\n    <h2>Investigadores japoneses crean tecnolog\u00eda que permite grabar y observar los sue\u00f1os humanos<\/h2>\n    <p>Cient\u00edficos est\u00e1n desarrollando un algoritmo que permitir\u00e1 grabar y observar los sue\u00f1os humanos. C\u00f3mo funcionar\u00e1 el dispositivo, teniendo en cuenta que a\u00fan se est\u00e1 perfeccionando<\/p>\n  <\/div>"
+    },
+    {
+        "id": "2",
+        "content": "\n      <div class=\"card-images\"><\/div>\n    <div class=\"text-layer\" style=\"left: 7px; top: 102px; width: 346px; height: 547px; font-size: 23px;\">\n    <h2 contenteditable=\"true\" style=\"display: none;\">Nuevo T\u00edtulo<\/h2>\n    <p><div>\u00bfTe gustar\u00eda que tus sue\u00f1os fueran registrados y vistos por ti y otros? Bueno, eso es lo que los investigadores japoneses est\u00e1n tratando de hacer.<\/div><div><br><\/div>Est\u00e1n desarrollando una tecnolog\u00eda capaz de grabar y reproducir los sue\u00f1os humanos utilizando Inteligencia Artificial (IA). La combinaci\u00f3n de neurociencia e IA promete permitir a las personas adentrarse en sus sue\u00f1os y reproducirlos digitalmente, seg\u00fan el portal Meteored.<\/p>\n  <\/div>"
+    },
+    {
+        "id": "3",
+        "content": "\n      <div class=\"card-images\"><\/div>\n    <div class=\"text-layer\" style=\"left: 6px; top: 37px; width: 350px; height: 605px; font-size: 23px;\">\n    <h2 contenteditable=\"true\" style=\"display: none;\">Nuevo T\u00edtulo<\/h2>\n    <p><div>Esta revolucionaria innovaci\u00f3n combina avances en im\u00e1genes cerebrales e inteligencia artificial, y fue creada por cient\u00edficos de los Laboratorios de Neurociencia Computacional ATR en Kioto. Utilizaron im\u00e1genes por resonancia magn\u00e9tica funcional (fMRI) para capturar la actividad neuronal de los voluntarios relacionada con los sue\u00f1os.<\/div><div><br><\/div>Se monitore\u00f3 la actividad cerebral de los participantes durante las primeras etapas del sue\u00f1o y, una vez que entraron en la fase REM, se los despert\u00f3 y se les pregunt\u00f3 sobre los sue\u00f1os que hab\u00edan tenido.<\/p>\n  <\/div>"
+    }
+]

@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ETA-T3 Editor</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <style>
+    /* Estilos base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      background: #e0e0e0;
+      overflow: hidden;
+    }
+    .main-wrapper {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      display: flex;
+    }
+    .title-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: transparent;
+      color: #0e0e0e;
+      padding: 15px;
+      font-size: 20px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 2000;
+      padding-right: 30px;
+    }
+    .title-bar button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-left: 5px;
+    }
+    .sidebar {
+      width: 80px;
+      background: rgba(255, 255, 255, 0.9);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 10px;
+      padding-left: 8px;
+      padding-bottom: 5px;
+      gap: 10px;
+      border-bottom-right-radius: 10px;
+      border-top-right-radius: 10px;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1000;
+      box-shadow: 0 0 0.6em #0000001f;
+    }
+    .toolButton {
+      background: transparent;
+      border: none;
+      color: rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      padding: 10px;
+      font-size: 20px;
+      border-radius: 5px;
+      width: 90%;
+      text-align: center;
+    }
+    .toolButton:hover {
+      background: rgba(128,128,128,0.5);
+    }
+    /* Canvas y contenedor de tarjetas */
+    .canvas {
+      flex-grow: 1;
+      height: 100vh;
+      overflow-y: auto;
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      z-index: 100;
+      padding-top: 0px;
+    }
+    #cards-container {
+      position: relative;
+      transform-origin: top center;
+      transition: transform 0.2s ease;
+      padding-top: 150px;
+    }
+    .card {
+      width: auto;
+      height: 70vh;
+      aspect-ratio: 9/16;
+      border-radius: 15px;
+      background: white;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 80px;
+      box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: pointer;
+      /* Se quita el padding */
+      padding: 0;
+      transition: border 0.2s ease;
+    }
+    .card.selected {
+      border: 2px solid #007bff;
+    }
+    /* Estructura interna de la tarjeta */
+    .card-content {
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+    }
+    .card-content h2, .card-content p {
+      margin: 10px;
+    }
+    .card-images {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    /* La botonera se oculta por defecto y solo se muestra si la tarjeta está seleccionada */
+    .card-buttons {
+      display: none;
+      gap: 10px;
+      justify-content: center;
+      position: absolute;
+      bottom: -50px;
+      z-index: 2;
+    }
+    .card.selected .card-buttons {
+      display: flex;
+    }
+    .card-buttons button {
+      background: #ff5722;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 18px;
+      font-size: 16px;
+      width: 36px;
+      height: 36px;
+    }
+    /* Wrapper individual de la imagen */
+    .card-image-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .card-image-wrapper img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .card-image-wrapper.selected-image {
+      border: 2px dashed #007bff;
+    }
+    /* Estilo para el anchor de giro */
+    .rotate-anchor {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 12px;
+      text-decoration: none;
+      cursor: pointer;
+      z-index: 3;
+    }
+    /* Puntos de anclaje para edición de imagen */
+    .resize-handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: #007bff;
+      border: 1px solid #fff;
+      z-index: 2;
+    }
+    .resize-handle.tl { top: -5px; left: -5px; cursor: nwse-resize; }
+    .resize-handle.tr { top: -5px; right: -5px; cursor: nesw-resize; }
+    .resize-handle.bl { bottom: -5px; left: -5px; cursor: nesw-resize; }
+    .resize-handle.br { bottom: -5px; right: -5px; cursor: nwse-resize; }
+    /* Controles de zoom */
+    .zoom-controls {
+      position: fixed;
+      bottom: 10px;
+      right: 40px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(0,0,0,0.5);
+      padding: 5px 10px;
+      border-radius: 5px;
+      color: white;
+      font-size: 16px;
+      z-index: 1100;
+    }
+    .zoom-controls button {
+      background: transparent;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+    }
+    /* Layout horizontal */
+    #cards-container.horizontal-layout {
+      position: absolute;
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-left: 50vw;
+      margin-left: -200px;
+      width: max-content;
+      height: 98vh;
+      top: 0px;
+      gap: 40px;
+      padding-right: 25vw;
+    }
+    #cards-container.horizontal-layout .card {
+      left: 0;
+      transform: none;
+      margin: 10px;
+      margin-bottom: 0;
+    }
+    /* PANEL LATERAL */
+    #side-panel {
+      position: absolute;
+      right: -25vw;
+      top: 65px;
+      width: 25vw;
+      height: calc(100vh - 66px);
+      background: #fff;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+      transform: translateX(100%);
+      transition: right 0.5s ease;
+      z-index: 1500;
+      display: flex;
+      flex-direction: column;
+    }
+    #side-panel.open {
+      right: 25vw;
+    }
+    #side-panel #side-panel-header {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #side-panel #tabs {
+      display: flex;
+      border-bottom: 1px solid #ccc;
+    }
+    #side-panel #tabs .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+    #side-panel #tabs .tab.active {
+      background: #f0f0f0;
+      font-weight: bold;
+    }
+    #side-panel .tab-pane {
+      flex-grow: 1;
+      display: none;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    #side-panel .tab-pane.active {
+      display: block;
+    }
+    /* Biblioteca de imágenes */
+    #image-library {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    #image-library img {
+      width: 48%;
+      object-fit: cover;
+      cursor: pointer;
+    }
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: rgba(128,128,128,0.9);
+      border-radius: 6px;
+      border: 1px solid rgba(0,0,0,0);
+    }
+    ::-webkit-scrollbar-track {
+      background-color: rgba(255,255,255,0);
+      border-radius: 6px;
+    }
+    ::-webkit-scrollbar-button {
+      display: none;
+    }
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128,128,128,0.9) rgba(255,255,255,0);
+  </style>
+</head>
+<body>
+  <div class="main-wrapper">
+    <div class="canvas" id="canvas">
+      <!-- Contenedor de tarjetas -->
+      <div id="cards-container"></div>
+      <!-- Controles de zoom -->
+      <div class="zoom-controls">
+        <button id="zoom-out"><i class="fas fa-search-minus"></i></button>
+        <span id="zoom-level">100%</span>
+        <button id="zoom-in"><i class="fas fa-search-plus"></i></button>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="toolButton" onclick="addCard()"><i class="fas fa-file-alt"></i></div>
+      <div class="toolButton" onclick="addVideo()"><i class="fas fa-video"></i></div>
+      <div class="toolButton" onclick="addQuiz()"><i class="fas fa-question-circle"></i></div>
+      <div class="toolButton" onclick="addAudio()"><i class="fas fa-music"></i></div>
+      <div class="toolButton" onclick="addForm()"><i class="fas fa-edit"></i></div>
+      <div class="toolButton" onclick="addSurvey()"><i class="fas fa-chart-pie"></i></div>
+      <div class="toolButton" onclick="addTextButton()"><i class="fas fa-dot-circle"></i></div>
+    </div>
+    <div class="title-bar">
+      <span>ETA-T3 Editor</span>
+      <div>
+        <button onclick="saveCourse()">Guardar</button>
+        <button onclick="loadCourse()">Cargar</button>
+        <!-- Botón para alternar layout -->
+        <button id="toggle-layout" onclick="toggleLayout()">Layout: Vertical</button>
+      </div>
+    </div>
+    <!-- PANEL LATERAL -->
+    <div id="side-panel">
+      <div id="side-panel-header">
+        <span style="font-weight:bold;">Biblioteca</span>
+        <button onclick="closeSidePanel()" style="background:transparent; border:none; font-size:20px; cursor:pointer;">&times;</button>
+      </div>
+      <div id="tabs">
+        <div class="tab active" data-tab="images" onclick="showTab('images')">Imagen</div>
+        <div class="tab" data-tab="gifs" onclick="showTab('gifs')">GIF animados</div>
+        <div class="tab" data-tab="unsplash" onclick="showTab('unsplash')">Unsplash</div>
+      </div>
+      <div id="tab-content">
+        <div id="images-tab" class="tab-pane active">
+          <div id="image-library"></div>
+          <button id="upload-image-btn" style="margin-top:10px; padding:5px 10px;">Cargar imagen</button>
+          <input type="file" id="upload-image-input" accept="image/*" style="display:none;" onchange="handleUploadImage(event)">
+        </div>
+        <div id="gifs-tab" class="tab-pane">
+          <p>GIF animados (próximamente)</p>
+        </div>
+        <div id="unsplash-tab" class="tab-pane">
+          <p>Unsplash (próximamente)</p>
+        </div>
+      </div>
+    </div>
+    <!-- (El menú contextual no se usa en esta versión) -->
+    <div id="image-menu"></div>
+  </div>
+  <script>
+    ////////////////////////////////////////////////////////
+    // Variables globales
+    let cardId = 0;
+    let currentZoom = 100; // 100%
+    let currentLayout = "vertical";
+    let activeCard = null;
+    let imageLibrary = [];
+
+    ////////////////////////////////////////////////////////
+    // Actualizar zoom
+    function updateZoom() {
+      const cardsContainer = document.getElementById("cards-container");
+      cardsContainer.style.transform = `scale(${currentZoom / 100})`;
+      document.getElementById("zoom-level").textContent = `${currentZoom}%`;
+    }
+
+    ////////////////////////////////////////////////////////
+    // Agregar nueva tarjeta
+    function addCard({ title = `Tarjeta ${cardId + 1}`, text = "Texto de la tarjeta", content = null, id = null } = {}) {
+      const container = document.getElementById("cards-container");
+      const card = document.createElement("div");
+      if (id === null) {
+        id = cardId++;
+      } else {
+        cardId = Math.max(cardId, parseInt(id) + 1);
+      }
+      card.className = "card";
+      card.setAttribute("data-id", id);
+
+      card.innerHTML = `
+        <div class="card-content">
+          <h2 contenteditable="true">${title}</h2>
+          <p contenteditable="true">${text}</p>
+          <div class="card-images"></div>
+        </div>
+        <div class="card-buttons">
+          <button onclick="toggleTitle(this)"><i class="fas fa-font"></i></button>
+          <button onclick="toggleText(this)"><i class="fas fa-align-justify"></i></button>
+          <button onclick="duplicateCard(this)"><i class="fas fa-clone"></i></button>
+          <button onclick="deleteCard(this)"><i class="fas fa-trash"></i></button>
+          <button onclick="openSidePanelForCard(this)"><i class="fas fa-image"></i></button>
+          <button onclick="deleteSelectedImage(this)"><i class="fas fa-times"></i></button>
+        </div>
+      `;
+      if (content !== null) {
+        card.querySelector(".card-content").innerHTML = content;
+      }
+      card.addEventListener("click", function(e) {
+        if (e.target.closest(".card-buttons")) return;
+        document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        activeCard = card;
+      });
+      container.appendChild(card);
+    }
+
+    ////////////////////////////////////////////////////////
+    // Guardar curso (se guarda el innerHTML del contenedor editable)
+    function saveCourse() {
+      const cards = document.querySelectorAll(".card");
+      const data = [];
+      cards.forEach(card => {
+        const contentDiv = card.querySelector(".card-content");
+        data.push({
+          id: card.getAttribute("data-id"),
+          content: contentDiv.innerHTML
+        });
+      });
+      localStorage.setItem("courseData", JSON.stringify(data));
+      alert("Curso guardado");
+    }
+
+    ////////////////////////////////////////////////////////
+    // Cargar curso
+    function loadCourse() {
+      const container = document.getElementById("cards-container");
+      container.innerHTML = "";
+      const data = JSON.parse(localStorage.getItem("courseData")) || [];
+      data.forEach(item => {
+        addCard({
+          content: item.content,
+          id: item.id
+        });
+      });
+    }
+
+    ////////////////////////////////////////////////////////
+    // Funciones para botones internos
+    function toggleTitle(btn) {
+      const card = btn.closest(".card");
+      const title = card.querySelector("h2");
+      title.style.display = title.style.display === "none" ? "block" : "none";
+    }
+    function toggleText(btn) {
+      const card = btn.closest(".card");
+      let text = card.querySelector("p");
+      if (!text) {
+        text = document.createElement("p");
+        text.textContent = "Texto de la tarjeta";
+        card.insertBefore(text, card.querySelector(".card-buttons"));
+      } else {
+        text.style.display = text.style.display === "none" ? "block" : "none";
+      }
+    }
+    function duplicateCard(btn) {
+      const card = btn.closest(".card");
+      const content = card.querySelector(".card-content").innerHTML;
+      addCard({ content: content });
+    }
+    function deleteCard(btn) {
+      const card = btn.closest(".card");
+      card.remove();
+    }
+
+    ////////////////////////////////////////////////////////
+    // Abrir panel lateral desde la tarjeta
+    function openSidePanelForCard(btn) {
+      activeCard = btn.closest(".card");
+      openSidePanel();
+    }
+
+    ////////////////////////////////////////////////////////
+    // Agregar imagen a la tarjeta (permite múltiples imágenes)
+    function addImageToCard(card, src) {
+      const imagesContainer = card.querySelector(".card-images");
+      const wrapper = document.createElement("div");
+      wrapper.className = "card-image-wrapper";
+      wrapper.style.top = "0px";
+      wrapper.style.left = "0px";
+      // Inicializar rotación en 0°
+      wrapper.dataset.rotation = "0";
+      const img = document.createElement("img");
+      img.src = src;
+      img.onload = function() {
+        wrapper.style.width = img.naturalWidth + "px";
+        wrapper.style.height = img.naturalHeight + "px";
+      };
+      // Al hacer clic, se selecciona y entra en modo edición (se agrega el rotate anchor)
+      wrapper.addEventListener("click", function(e) {
+        e.stopPropagation();
+        imagesContainer.querySelectorAll(".card-image-wrapper").forEach(w => {
+          w.classList.remove("selected-image");
+          removeRotateAnchor(w);
+        });
+        wrapper.classList.add("selected-image");
+        addRotateAnchor(wrapper);
+        editImageOnElement(wrapper);
+      });
+      wrapper.appendChild(img);
+      imagesContainer.appendChild(wrapper);
+    }
+
+    ////////////////////////////////////////////////////////
+    // Eliminar imagen seleccionada de la tarjeta
+    function deleteSelectedImage(btn) {
+      const card = btn.closest(".card");
+      const selectedImg = card.querySelector(".card-images .card-image-wrapper.selected-image");
+      if (selectedImg) {
+        selectedImg.remove();
+      } else {
+        alert("No hay imagen seleccionada para borrar.");
+      }
+    }
+
+    ////////////////////////////////////////////////////////
+    // Función para rotar la imagen en el wrapper
+    function rotateImage(wrapper) {
+      let currentRotation = parseInt(wrapper.dataset.rotation) || 0;
+      currentRotation = (currentRotation + 90) % 360;
+      wrapper.dataset.rotation = currentRotation;
+      wrapper.style.transform = `rotate(${currentRotation}deg)`;
+    }
+
+    // Agregar el rotate anchor al wrapper (si no existe)
+    function addRotateAnchor(wrapper) {
+      if (!wrapper.querySelector(".rotate-anchor")) {
+        const anchor = document.createElement("a");
+        anchor.href = "#";
+        anchor.className = "rotate-anchor";
+        anchor.textContent = "Girar";
+        anchor.addEventListener("click", function(e) {
+          e.stopPropagation();
+          rotateImage(wrapper);
+        });
+        wrapper.appendChild(anchor);
+      }
+    }
+
+    // Remover el rotate anchor del wrapper
+    function removeRotateAnchor(wrapper) {
+      const anchor = wrapper.querySelector(".rotate-anchor");
+      if (anchor) {
+        anchor.remove();
+      }
+    }
+
+    ////////////////////////////////////////////////////////
+    // Deseleccionar imágenes al hacer clic fuera de un wrapper
+    document.addEventListener("click", function(e) {
+      if (!e.target.closest(".card-image-wrapper")) {
+        document.querySelectorAll(".card-image-wrapper.selected-image").forEach(wrapper => {
+          wrapper.classList.remove("selected-image");
+          removeRotateAnchor(wrapper);
+        });
+      }
+    });
+
+    ////////////////////////////////////////////////////////
+    // Subir imagen al servidor mediante fetch (upload.php)
+    function setBackgroundImage(event, btn) {
+      const card = btn.closest(".card");
+      const file = event.target.files[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        fetch("upload.php", {
+          method: "POST",
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === "success") {
+            addImageToCard(card, data.url);
+            imageLibrary.push(data.url);
+            updateImageLibrary();
+          } else {
+            alert("Error al subir la imagen: " + data.message);
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert("Error al subir la imagen.");
+        });
+      }
+    }
+    function handleUploadImage(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        fetch("upload.php", {
+          method: "POST",
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === "success") {
+            if (activeCard) {
+              addImageToCard(activeCard, data.url);
+            }
+            imageLibrary.push(data.url);
+            updateImageLibrary();
+          } else {
+            alert("Error al subir la imagen: " + data.message);
+          }
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          alert("Error al subir la imagen.");
+        });
+      }
+    }
+
+    ////////////////////////////////////////////////////////
+    // Actualizar biblioteca de imágenes
+    function updateImageLibrary() {
+      const libraryDiv = document.getElementById("image-library");
+      libraryDiv.innerHTML = "";
+      imageLibrary.forEach(src => {
+        const img = document.createElement("img");
+        img.src = src;
+        img.style.cursor = "pointer";
+        img.addEventListener("click", function() {
+          if (activeCard) {
+            addImageToCard(activeCard, src);
+          }
+        });
+        libraryDiv.appendChild(img);
+      });
+    }
+
+    ////////////////////////////////////////////////////////
+    // Modo edición de imagen: agregar puntos de redimensionamiento y habilitar arrastre
+    function editImageOnElement(wrapper) {
+      if (wrapper.classList.contains("editing")) return;
+      wrapper.classList.add("editing");
+      const tl = document.createElement("div");
+      tl.className = "resize-handle tl";
+      const tr = document.createElement("div");
+      tr.className = "resize-handle tr";
+      const bl = document.createElement("div");
+      bl.className = "resize-handle bl";
+      const br = document.createElement("div");
+      br.className = "resize-handle br";
+      [tl, tr, bl, br].forEach(handle => {
+        wrapper.appendChild(handle);
+        handle.addEventListener("mousedown", initResize);
+      });
+      wrapper.style.cursor = "move";
+      wrapper.addEventListener("mousedown", initDragImage);
+      document.addEventListener("mousedown", function finishEditMode(e) {
+        if (!wrapper.contains(e.target)) {
+          [tl, tr, bl, br].forEach(handle => handle.remove());
+          wrapper.classList.remove("editing");
+          wrapper.style.cursor = "default";
+          document.removeEventListener("mousedown", finishEditMode);
+        }
+      });
+    }
+
+    ////////////////////////////////////////////////////////
+    // Redimensionar imagen
+    let resizeData = {};
+    function initResize(e) {
+      e.stopPropagation();
+      resizeData.handle = e.target;
+      resizeData.startX = e.clientX;
+      resizeData.startY = e.clientY;
+      const wrapper = e.target.parentElement;
+      resizeData.startWidth = wrapper.offsetWidth;
+      resizeData.startHeight = wrapper.offsetHeight;
+      resizeData.startLeft = wrapper.offsetLeft;
+      resizeData.startTop = wrapper.offsetTop;
+      resizeData.wrapper = wrapper;
+      document.addEventListener("mousemove", doResize);
+      document.addEventListener("mouseup", stopResize);
+    }
+    function doResize(e) {
+      e.preventDefault();
+      const dx = e.clientX - resizeData.startX;
+      const dy = e.clientY - resizeData.startY;
+      const handle = resizeData.handle;
+      const wrapper = resizeData.wrapper;
+      if (handle.classList.contains("tl")) {
+        wrapper.style.width = (resizeData.startWidth - dx) + "px";
+        wrapper.style.height = (resizeData.startHeight - dy) + "px";
+        wrapper.style.left = (resizeData.startLeft + dx) + "px";
+        wrapper.style.top = (resizeData.startTop + dy) + "px";
+      } else if (handle.classList.contains("tr")) {
+        wrapper.style.width = (resizeData.startWidth + dx) + "px";
+        wrapper.style.height = (resizeData.startHeight - dy) + "px";
+        wrapper.style.top = (resizeData.startTop + dy) + "px";
+      } else if (handle.classList.contains("bl")) {
+        wrapper.style.width = (resizeData.startWidth - dx) + "px";
+        wrapper.style.height = (resizeData.startHeight + dy) + "px";
+        wrapper.style.left = (resizeData.startLeft + dx) + "px";
+      } else if (handle.classList.contains("br")) {
+        wrapper.style.width = (resizeData.startWidth + dx) + "px";
+        wrapper.style.height = (resizeData.startHeight + dy) + "px";
+      }
+    }
+    function stopResize(e) {
+      document.removeEventListener("mousemove", doResize);
+      document.removeEventListener("mouseup", stopResize);
+    }
+
+    ////////////////////////////////////////////////////////
+    // Arrastrar imagen
+    let dragData = {};
+    function initDragImage(e) {
+      if (e.target.classList.contains("resize-handle")) return;
+      e.preventDefault();
+      dragData.startX = e.clientX;
+      dragData.startY = e.clientY;
+      const wrapper = e.currentTarget;
+      dragData.startLeft = wrapper.offsetLeft;
+      dragData.startTop = wrapper.offsetTop;
+      dragData.wrapper = wrapper;
+      document.addEventListener("mousemove", doDragImage);
+      document.addEventListener("mouseup", stopDragImage);
+    }
+    function doDragImage(e) {
+      e.preventDefault();
+      const dx = e.clientX - dragData.startX;
+      const dy = e.clientY - dragData.startY;
+      const wrapper = dragData.wrapper;
+      wrapper.style.left = (dragData.startLeft + dx) + "px";
+      wrapper.style.top = (dragData.startTop + dy) + "px";
+    }
+    function stopDragImage(e) {
+      document.removeEventListener("mousemove", doDragImage);
+      document.removeEventListener("mouseup", stopDragImage);
+    }
+
+    ////////////////////////////////////////////////////////
+    // Alternar layout vertical/horizontal
+    function toggleLayout() {
+      const container = document.getElementById("cards-container");
+      const btn = document.getElementById("toggle-layout");
+      if (currentLayout === "vertical") {
+        container.classList.add("horizontal-layout");
+        currentLayout = "horizontal";
+        btn.textContent = "Layout: Horizontal";
+      } else {
+        container.classList.remove("horizontal-layout");
+        currentLayout = "vertical";
+        btn.textContent = "Layout: Vertical";
+      }
+    }
+
+    ////////////////////////////////////////////////////////
+    // Funciones del Side Panel
+    function openSidePanel() {
+      document.getElementById("side-panel").classList.add("open");
+      showTab("images");
+    }
+    function closeSidePanel() {
+      document.getElementById("side-panel").classList.remove("open");
+    }
+    function showTab(tabName) {
+      document.querySelectorAll("#side-panel .tab-pane").forEach(pane => pane.classList.remove("active"));
+      document.getElementById(tabName + "-tab").classList.add("active");
+      document.querySelectorAll("#side-panel #tabs .tab").forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.tab === tabName);
+      });
+    }
+
+    ////////////////////////////////////////////////////////
+    // Inicializar editor
+    function initializeEditor() {
+      const container = document.getElementById("cards-container");
+      if (container.children.length === 0) { addCard(); }
+      updateZoom();
+      document.getElementById("zoom-in").addEventListener("click", function() {
+        currentZoom += 5;
+        updateZoom();
+      });
+      document.getElementById("zoom-out").addEventListener("click", function() {
+        currentZoom = Math.max(5, currentZoom - 5);
+        updateZoom();
+      });
+    }
+    window.onload = initializeEditor;
+    document.addEventListener("DOMContentLoaded", function() {
+      document.getElementById("upload-image-btn").addEventListener("click", function() {
+        document.getElementById("upload-image-input").click();
+      });
+      document.getElementById("canvas").addEventListener("wheel", function(e) {
+        if (currentLayout === "horizontal") {
+          e.preventDefault();
+          this.scrollLeft += e.deltaY;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
